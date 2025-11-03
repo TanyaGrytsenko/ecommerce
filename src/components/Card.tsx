@@ -37,18 +37,18 @@ export default function Card({
   footerContent,
 }: CardProps) {
   const content = (
-    <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-[var(--color-light-300)] bg-[var(--color-light-100)] shadow-sm transition-transform duration-200 hover:-translate-y-1">
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--color-light-200)]">
+    <article className="group rounded-xl bg-light-100 ring-1 ring-light-300 transition-colors hover:ring-dark-500">
+      <div className="relative aspect-square overflow-hidden rounded-t-xl bg-light-200">
         <Image
           src={imageSrc}
           alt={imageAlt}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
-          className="object-contain"
+          sizes="(min-width: 1280px) 360px, (min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
           priority={false}
         />
         {badge ? (
-          <span className="absolute left-4 top-4 rounded-full bg-[var(--color-light-100)] px-3 py-1 text-xs font-medium text-[color:var(--color-orange)] shadow">
+          <span className="absolute left-4 top-4 rounded-full bg-light-100 px-3 py-1 text-xs font-medium text-[color:var(--color-orange)] shadow">
             {badge}
           </span>
         ) : null}
@@ -56,46 +56,20 @@ export default function Card({
 
       <div className="flex flex-1 flex-col gap-3 px-6 py-6 font-[family:var(--font-jost)]">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="text-[length:var(--text-heading-3)] font-medium leading-[var(--text-heading-3--line-height)] text-[color:var(--color-dark-900)]">
+          <h3 className="text-heading-3 text-dark-900">
             {title}
           </h3>
           {price ? (
-            <span className={`text-sm font-semibold ${ACCENT_STYLES[accent]}`}>
+            <span className={`text-body-medium text-dark-900`}>
               {price}
             </span>
           ) : null}
         </div>
 
-        <p className="text-sm leading-relaxed text-[color:var(--color-dark-700)]">
+        <p className="text-body text-dark-700">
           {description}
         </p>
 
-        <div className="mt-auto flex items-center justify-between gap-4 pt-2">
-          <span className={`text-sm font-medium uppercase tracking-wide ${ACCENT_STYLES[accent]}`}>
-            {actionLabel}
-          </span>
-          <svg
-            className={`h-5 w-5 ${ACCENT_STYLES[accent]}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path
-              d="M5 12h14M13 6l6 6-6 6"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-
-        {footerContent ? (
-          <div className="pt-4 text-xs text-[color:var(--color-dark-500)]">
-            {footerContent}
-          </div>
-        ) : null}
       </div>
     </article>
   );
