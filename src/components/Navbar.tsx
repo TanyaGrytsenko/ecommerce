@@ -69,7 +69,7 @@ export default function Navbar({ cartCount = 0, links = DEFAULT_LINKS }: NavbarP
           </Link>
           <Link
             href="/cart"
-            className="flex items-center gap-1 rounded-full border border-[var(--color-light-300)] px-3 py-1 transition-colors duration-150 hover:border-[var(--color-dark-900)] hover:text-[color:var(--color-green)] focus-visible:border-[var(--color-dark-900)] focus-visible:text-[color:var(--color-green)] focus-visible:outline-none"
+            className="flex items-center gap-1 transition-colors duration-150 hover:text-[color:var(--color-green)] focus-visible:text-[color:var(--color-green)] focus-visible:outline-none"
           >
             <span>My Cart</span>
             <span className="text-[color:var(--color-red)]">({cartCount})</span>

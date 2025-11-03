@@ -73,15 +73,35 @@ export default function Footer({
 }: FooterProps) {
   return (
     <footer className="w-full bg-[var(--color-dark-900)] text-[var(--color-light-100)]">
-      <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-12 font-[family:var(--font-jost)] lg:flex-row lg:justify-between lg:px-8">
-        <div className="flex flex-col gap-8">
-          <Link href="/" aria-label="Nike home" className="relative h-8 w-12">
+      <div className="border-b border-[color:var(--color-dark-700)]">
+        <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12 font-[family:var(--font-jost)] lg:flex-row lg:items-start lg:justify-between lg:px-8">
+          <Link href="/" aria-label="Nike home" className="relative h-8 w-12 shrink-0">
             <Image src="/logo.svg" alt="Nike logo" fill sizes="48px" className="object-contain invert" />
           </Link>
-          <p className="max-w-xs text-sm leading-relaxed text-[color:var(--color-light-400)]">
-            Exclusive sneakers, curated styles, and performance-ready gear made for every stride.
-          </p>
-          <div className="flex items-center gap-4">
+
+          <div className="grid flex-1 grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+            {sections.map((section) => (
+              <div key={section.title} className="min-w-[160px] space-y-4">
+                <h4 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-light-400)]">
+                  {section.title}
+                </h4>
+                <ul className="space-y-3 text-sm text-[color:var(--color-light-300)]">
+                  {section.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="transition-colors duration-150 hover:text-[color:var(--color-light-100)] focus-visible:text-[color:var(--color-light-100)] focus-visible:outline-none"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4 self-start">
             {socialLinks.map((social) => {
               const iconSrc = SOCIAL_ICON_MAP[social.label] ?? '/x.svg';
               return (
@@ -97,44 +117,22 @@ export default function Footer({
             })}
           </div>
         </div>
-
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
-          {sections.map((section) => (
-            <div key={section.title} className="min-w-[160px] space-y-4">
-              <h4 className="text-sm font-semibold uppercase tracking-widest text-[color:var(--color-light-400)]">
-                {section.title}
-              </h4>
-              <ul className="space-y-3 text-sm text-[color:var(--color-light-300)]">
-                {section.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="transition-colors duration-150 hover:text-[color:var(--color-light-100)] focus-visible:text-[color:var(--color-light-100)] focus-visible:outline-none"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
       </div>
 
-      <div className="border-t border-[color:var(--color-dark-700)]">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 text-xs text-[color:var(--color-light-400)] lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <p>© {new Date().getFullYear()} Nike Inc. All Rights Reserved</p>
-          <div className="flex flex-wrap items-center gap-4">
-            {['Guides', 'Terms of Sale', 'Terms of Use', 'Privacy Policy'].map((item) => (
-              <Link
-                key={item}
-                href={`/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                className="transition-colors duration-150 hover:text-[color:var(--color-light-100)] focus-visible:text-[color:var(--color-light-100)] focus-visible:outline-none"
-              >
-                {item}
-              </Link>
-            ))}
-          </div>
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 text-xs text-[color:var(--color-light-400)] lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <p>
+          Croatia · © {new Date().getFullYear()} Nike, Inc. All Rights Reserved
+        </p>
+        <div className="flex flex-wrap items-center gap-4">
+          {['Guides', 'Terms of Sale', 'Terms of Use', 'Nike Privacy Policy'].map((item) => (
+            <Link
+              key={item}
+              href={`/${item.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+              className="transition-colors duration-150 hover:text-[color:var(--color-light-100)] focus-visible:text-[color:var(--color-light-100)] focus-visible:outline-none"
+            >
+              {item}
+            </Link>
+          ))}
         </div>
       </div>
     </footer>
