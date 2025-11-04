@@ -9,14 +9,21 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <AuthForm
-      title="Welcome back"
-      subtitle="Sign in to track your training milestones and manage your gear."
-      fields={[
+      title="Join Nike Today!"
+      subtitle="Create your account to start your fitness journey"
+      fields={[{
+              name: "fullName",
+              label: "Full Name",
+              type: "text",
+              placeholder: "Enter your full name",
+              autoComplete: "name",
+              required: true,
+         },
         {
           name: "email",
-          label: "Email address",
+          label: "Email",
           type: "email",
-          placeholder: "you@example.com",
+          placeholder: "johndoe@gmail.com",
           autoComplete: "email",
           required: true,
         },
@@ -24,25 +31,25 @@ export default function SignInPage() {
           name: "password",
           label: "Password",
           type: "password",
-          placeholder: "Enter your password",
+          placeholder: "minimum 8 characters",
           autoComplete: "current-password",
           required: true,
         },
       ]}
       submitLabel="Sign In"
       alternateAction={{
-        prompt: "New to Stride Collective?",
+        prompt: "Already have an account?",
         href: "/sign-up",
-        label: "Create an account",
+        label: "Sign Up",
       }}
       terms={
         <p>
           By continuing you agree to our{" "}
-          <Link href="/terms" className="font-medium text-dark-900 underline-offset-4 hover:underline">
+          <Link href="/terms" className="underline hover:text-dark-900">
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="font-medium text-dark-900 underline-offset-4 hover:underline">
+          <Link href="/privacy" className="underline hover:text-dark-900">
             Privacy Policy
           </Link>
           .

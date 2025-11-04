@@ -9,21 +9,21 @@ export const metadata: Metadata = {
 export default function SignUpPage() {
   return (
     <AuthForm
-      title="Join Stride Collective"
-      subtitle="Create an account to unlock tailored training plans and exclusive drops."
+      title="Join Nike Today!"
+      subtitle="Create your account to start your fitness journey"
       fields={[
         {
           name: "fullName",
-          label: "Full name",
+          label: "Full Name",
           placeholder: "Enter your full name",
           autoComplete: "name",
           required: true,
         },
         {
           name: "email",
-          label: "Email address",
+          label: "Email",
           type: "email",
-          placeholder: "you@example.com",
+          placeholder: "johndoe@gmail.com",
           autoComplete: "email",
           required: true,
         },
@@ -31,7 +31,7 @@ export default function SignUpPage() {
           name: "password",
           label: "Password",
           type: "password",
-          placeholder: "Minimum 8 characters",
+          placeholder: "minimum 8 characters",
           autoComplete: "new-password",
           required: true,
         },
@@ -43,17 +43,17 @@ export default function SignUpPage() {
         label: "Sign in",
       }}
       terms={
-        <p>
-          By signing up, you agree to our{" "}
-          <Link href="/terms" className="font-medium text-dark-900 underline-offset-4 hover:underline">
-            Terms of Service
-          </Link>{" "}
-          and acknowledge our{" "}
-          <Link href="/privacy" className="font-medium text-dark-900 underline-offset-4 hover:underline">
-            Privacy Policy
-          </Link>
-          .
-        </p>
+          <p>
+              By continuing you agree to our{" "}
+              <Link href="/terms" className="underline hover:text-dark-900">
+                  Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="underline hover:text-dark-900">
+                  Privacy Policy
+              </Link>
+              .
+          </p>
       }
     />
   );
