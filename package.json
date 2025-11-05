@@ -11,7 +11,10 @@
   "dependencies": {
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "next": "16.0.0"
+    "next": "16.0.0",
+    "query-string": "^9.1.0",
+    "drizzle-orm": "^0.38.6",
+    "pg": "^8.12.0"
   },
   "devDependencies": {
     "typescript": "^5",

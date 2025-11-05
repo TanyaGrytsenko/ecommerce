@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "query-string": [
+        "./src/lib/vendor/query-string"
       ]
     }
   },

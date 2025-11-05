@@ -36,8 +36,10 @@ export default function Card({
   actionLabel = 'Shop now',
   footerContent,
 }: CardProps) {
+  const accentClassName = ACCENT_STYLES[accent];
+
   const content = (
-    <article className="group rounded-xl bg-light-100 ring-1 ring-light-300 transition-colors hover:ring-dark-500">
+    <article className="group flex h-full flex-col rounded-xl bg-light-100 ring-1 ring-light-300 transition-colors hover:ring-dark-500">
       <div className="relative aspect-square overflow-hidden rounded-t-xl bg-light-200">
         <Image
           src={imageSrc}
@@ -54,13 +56,13 @@ export default function Card({
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 px-6 py-6 font-[family:var(--font-jost)]">
+      <div className="flex flex-1 flex-col gap-4 px-6 py-6 font-[family:var(--font-jost)]">
         <div className="flex items-start justify-between gap-4">
           <h3 className="text-heading-3 text-dark-900">
             {title}
           </h3>
           {price ? (
-            <span className={`text-body-medium text-dark-900`}>
+            <span className={`text-body-medium ${accentClassName}`}>
               {price}
             </span>
           ) : null}
@@ -69,7 +71,15 @@ export default function Card({
         <p className="text-body text-dark-700">
           {description}
         </p>
-
+        {footerContent ? (
+          <div className="mt-auto text-caption text-dark-500">{footerContent}</div>
+        ) : null}
+        {href ? (
+          <span className={`mt-auto inline-flex items-center gap-1 text-caption font-medium ${accentClassName}`}>
+            {actionLabel}
+            <span aria-hidden>→</span>
+          </span>
+        ) : null}
       </div>
     </article>
   );
