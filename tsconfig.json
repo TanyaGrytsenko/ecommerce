@@ -28,6 +28,9 @@
       ],
       "query-string": [
         "./src/lib/vendor/query-string"
+      ],
+      "lucide-react": [
+        "./src/lib/vendor/lucide-react"
       ]
     }
   },
