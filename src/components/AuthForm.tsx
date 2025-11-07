@@ -6,12 +6,12 @@ import { useState } from "react";
 import SocialProviders from "./SocialProviders";
 
 type AuthFormField = {
-    autoComplete?: string;
-    label: string;
     name: string;
-    placeholder?: string;
-    required?: boolean;
+    label: string;
     type?: InputHTMLAttributes<HTMLInputElement>["type"];
+    placeholder?: string;
+    autoComplete?: string;
+    required?: boolean;
 };
 
 interface AuthFormProps {
