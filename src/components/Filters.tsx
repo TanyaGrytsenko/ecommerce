@@ -1,255 +1,269 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import {
-  COLOR_OPTIONS,
-  GENDER_OPTIONS,
-  PRICE_OPTIONS,
-  SIZE_OPTIONS,
-} from "@/src/data/products";
+import Sort, { type SizeOption } from "@/src/components/Sort";
 import {
   buildUrl,
-  getQueryValues,
   parseSearchParams,
   removeQueryKeys,
-  toggleQueryValue,
-  type ParsedQuery,
+  setQueryValue,
 } from "@/src/lib/utils/query";
 
-const FILTER_GROUPS = [
-  { key: "gender", label: "Gender", options: GENDER_OPTIONS },
-  { key: "size", label: "Size", options: SIZE_OPTIONS },
-  { key: "color", label: "Color", options: COLOR_OPTIONS },
-  { key: "price", label: "Price", options: PRICE_OPTIONS },
-] as const;
-
-const RESET_KEYS = ["page"];
-
-type FilterKey = (typeof FILTER_GROUPS)[number]["key"];
-
-type SelectedMap = Record<FilterKey, Set<string>>;
-
-function useSelectedFilters(searchQuery: ParsedQuery<string>): SelectedMap {
-  return useMemo(() => {
-    const map = {} as SelectedMap;
-
-    for (const group of FILTER_GROUPS) {
-      map[group.key] = new Set(getQueryValues(searchQuery, group.key));
-    }
-
-    return map;
-  }, [searchQuery]);
+export interface VariantOption {
+  id: string;
+  value: string;
+  label: string;
+  colorFamily: string;
+  thumbnail: string;
 }
 
-function FilterContent({
-  selectedMap,
-  onToggle,
-  onClear,
-  expandedState,
-  setExpandedState,
-  activeCount,
-}: {
-  selectedMap: SelectedMap;
-  onToggle: (key: FilterKey, value: string) => void;
-  onClear: () => void;
-  expandedState: Record<FilterKey, boolean>;
-  setExpandedState: (updater: (prev: Record<FilterKey, boolean>) => Record<FilterKey, boolean>) => void;
-  activeCount: number;
-}) {
-  return (
-    <div className="flex h-full flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-heading-3 text-dark-900">Filters</h2>
-        <button
-          type="button"
-          onClick={onClear}
-          disabled={activeCount === 0}
-          className="text-body-medium text-dark-700 transition hover:text-dark-900 disabled:cursor-not-allowed disabled:text-light-400"
-        >
-          Clear all
-        </button>
-      </div>
-
-      <div className="space-y-6">
-        {FILTER_GROUPS.map((group) => {
-          const isExpanded = expandedState[group.key];
-
-          return (
-            <section key={group.key} className="border-b border-light-300 pb-4 last:border-none">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between text-left text-body-medium text-dark-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
-                onClick={() =>
-                  setExpandedState((prev) => ({
-                    ...prev,
-                    [group.key]: !prev[group.key],
-                  }))
-                }
-                aria-expanded={isExpanded}
-              >
-                <span>{group.label}</span>
-                <span className="text-caption text-dark-500">
-                  {isExpanded ? "−" : "+"}
-                </span>
-              </button>
-
-              {isExpanded ? (
-                <div className="mt-4 space-y-3">
-                  {group.options.map((option) => {
-                    const optionId = `${group.key}-${option.value}`;
-                    const isChecked = selectedMap[group.key].has(option.value);
-
-                    return (
-                      <label
-                        key={option.value}
-                        htmlFor={optionId}
-                        className="flex items-center gap-3 text-body text-dark-700"
-                      >
-                        <input
-                          id={optionId}
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-light-400 text-dark-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
-                          checked={isChecked}
-                          onChange={() => onToggle(group.key, option.value)}
-                        />
-                        <span>{option.label}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </section>
-          );
-        })}
-      </div>
-    </div>
-  );
+interface FiltersProps {
+  variants: VariantOption[];
+  sizes: SizeOption[];
+  defaultVariant: string;
+  sizeGuideHref?: string;
 }
 
-export default function Filters() {
+export default function Filters({
+  variants,
+  sizes,
+  defaultVariant,
+  sizeGuideHref,
+}: FiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [expandedState, setExpandedState] = useState<Record<FilterKey, boolean>>(
-    () => {
-      const initial = {} as Record<FilterKey, boolean>;
-
-      for (const group of FILTER_GROUPS) {
-        initial[group.key] = true;
-      }
-
-      return initial;
-    }
-  );
 
   const query = useMemo(
     () => parseSearchParams(searchParams.toString()),
     [searchParams]
   );
 
-  const selectedMap = useSelectedFilters(query);
-  const activeFilterCount = useMemo(
+  const selectedColor = useMemo(() => {
+    const value = query.color;
+
+    if (!value) {
+      return defaultVariant;
+    }
+
+    if (Array.isArray(value)) {
+      return value[0] ?? defaultVariant;
+    }
+
+    return value;
+  }, [defaultVariant, query.color]);
+
+  const activeVariant = useMemo(
     () =>
-      FILTER_GROUPS.reduce(
-        (count, group) => count + selectedMap[group.key].size,
-        0
-      ),
-    [selectedMap]
+      variants.find((variant) => variant.value === selectedColor) ??
+      variants.find((variant) => variant.value === defaultVariant) ??
+      variants[0],
+    [defaultVariant, selectedColor, variants]
   );
 
+  const handleVariantSelect = useCallback(
+    (value: string) => {
+      const isDefault = value === defaultVariant;
+      const nextQuery = setQueryValue(query, "color", isDefault ? null : value);
+      const nextUrl = buildUrl(pathname, nextQuery);
+
+      router.replace(nextUrl, { scroll: false });
+      setIsDrawerOpen(false);
+    },
+    [defaultVariant, pathname, query, router]
+  );
+
+  const handleClear = useCallback(() => {
+    const nextQuery = removeQueryKeys(query, ["color", "size"]);
+    router.replace(buildUrl(pathname, nextQuery), { scroll: false });
+    setIsDrawerOpen(false);
+  }, [pathname, query, router]);
+
   useEffect(() => {
-    if (!isDrawerOpen) return;
+    if (!isDrawerOpen) {
+      return;
+    }
 
     const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDrawerOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       document.body.style.overflow = original;
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isDrawerOpen]);
 
-  const handleToggle = useCallback(
-    (key: FilterKey, value: string) => {
-      const nextQuery = removeQueryKeys(
-        toggleQueryValue(query, key, value),
-        RESET_KEYS
-      );
-      const nextUrl = buildUrl(pathname, nextQuery);
+  const variantButtons = (
+    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-3">
+      {variants.map((variant) => {
+        const isActive = variant.value === activeVariant?.value;
 
-      router.push(nextUrl, { scroll: false });
-      setIsDrawerOpen(false);
-    },
-    [pathname, query, router]
+        return (
+          <button
+            key={variant.id}
+            type="button"
+            onClick={() => handleVariantSelect(variant.value)}
+            aria-pressed={isActive}
+            className={`flex flex-col items-center gap-2 rounded-2xl border bg-light-100 p-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900 ${
+              isActive
+                ? "border-dark-900"
+                : "border-transparent hover:border-dark-900"
+            }`}
+          >
+            <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-light-200">
+              <Image
+                src={variant.thumbnail}
+                alt={variant.label}
+                fill
+                sizes="(min-width: 1024px) 160px, (min-width: 640px) 120px, 100px"
+                className="object-cover"
+              />
+            </div>
+            <div className="space-y-1">
+              <p className="text-body-medium text-dark-900">{variant.label}</p>
+              <p className="text-caption text-dark-500">{variant.colorFamily}</p>
+            </div>
+          </button>
+        );
+      })}
+    </div>
   );
 
-  const handleClear = useCallback(() => {
-    const filterKeys = FILTER_GROUPS.map((group) => group.key);
-    const nextQuery = removeQueryKeys(
-      removeQueryKeys(query, filterKeys),
-      RESET_KEYS
-    );
-
-    router.push(buildUrl(pathname, nextQuery), { scroll: false });
-    setIsDrawerOpen(false);
-  }, [pathname, query, router]);
-
   return (
-    <div className="w-full lg:w-64">
-      <div className="flex items-center justify-between lg:hidden">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between gap-4 md:hidden">
         <button
           type="button"
           onClick={() => setIsDrawerOpen(true)}
-          className="flex items-center gap-2 rounded-full border border-dark-900 px-4 py-2 text-body-medium text-dark-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
+          className="flex items-center gap-2 rounded-full border border-dark-900 px-4 py-2 text-body-medium text-dark-900 transition hover:bg-light-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
         >
-          <span>Filters</span>
-          <span className="text-caption text-dark-500">(
-            {FILTER_GROUPS.reduce(
-              (count, group) => count + selectedMap[group.key].size,
-              0
-            )}
-            )
-          </span>
+          Filters
+        </button>
+        <button
+          type="button"
+          onClick={handleClear}
+          className="text-body text-dark-500 underline underline-offset-4 transition hover:text-dark-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
+        >
+          Clear
         </button>
       </div>
 
-      <aside className="hidden rounded-2xl border border-light-300 bg-light-100 p-6 shadow-sm lg:block">
-        <FilterContent
-          selectedMap={selectedMap}
-          onToggle={handleToggle}
-          onClear={handleClear}
-          expandedState={expandedState}
-          setExpandedState={setExpandedState}
-          activeCount={activeFilterCount}
-        />
-      </aside>
+      <section aria-label="Select Color" className="space-y-4">
+        <div className="flex items-baseline justify-between gap-4">
+          <div>
+            <p className="text-caption uppercase tracking-wide text-dark-500">
+              Select Color
+            </p>
+            <p className="text-body text-dark-700">
+              {activeVariant ? activeVariant.label : "Choose a color"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="hidden text-body text-dark-500 underline underline-offset-4 transition hover:text-dark-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900 md:inline"
+          >
+            Clear
+          </button>
+        </div>
+
+        <div className="hidden lg:block">{variantButtons}</div>
+        <div className="lg:hidden">
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {variants.map((variant) => {
+              const isActive = variant.value === activeVariant?.value;
+
+              return (
+                <button
+                  key={`mobile-${variant.id}`}
+                  type="button"
+                  onClick={() => handleVariantSelect(variant.value)}
+                  aria-pressed={isActive}
+                  className={`flex w-36 flex-shrink-0 flex-col items-center gap-2 rounded-2xl border bg-light-100 p-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900 ${
+                    isActive
+                      ? "border-dark-900"
+                      : "border-transparent hover:border-dark-900"
+                  }`}
+                >
+                  <div className="relative h-24 w-full overflow-hidden rounded-xl bg-light-200">
+                    <Image
+                      src={variant.thumbnail}
+                      alt={variant.label}
+                      fill
+                      sizes="144px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <p className="text-caption text-dark-900">{variant.label}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <div className="md:hidden">
+        <Sort sizes={sizes} sizeGuideHref={sizeGuideHref} />
+      </div>
+
+      <div className="hidden md:block">
+        <Sort sizes={sizes} sizeGuideHref={sizeGuideHref} />
+      </div>
 
       {isDrawerOpen ? (
-        <div className="fixed inset-0 z-40 flex lg:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex">
           <div
             className="flex-1 bg-dark-900/40"
+            aria-hidden="true"
             onClick={() => setIsDrawerOpen(false)}
           />
-          <aside className="relative h-full w-80 max-w-full translate-x-0 bg-light-100 p-6 shadow-xl">
+          <div
+            className="w-80 max-w-full bg-light-100 p-6 shadow-xl sm:w-96"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filters"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-heading-3 text-dark-900">Filters</h2>
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="rounded-full p-2 text-dark-900 transition hover:bg-light-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
+                aria-label="Close filters"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-8 overflow-y-auto">
+              <section className="space-y-4" aria-label="Select Color">
+                <h3 className="text-body-medium text-dark-900">Select Color</h3>
+                {variantButtons}
+              </section>
+
+              <Sort sizes={sizes} sizeGuideHref={sizeGuideHref} />
+            </div>
+
             <button
               type="button"
-              className="mb-4 text-body-medium text-dark-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
-              onClick={() => setIsDrawerOpen(false)}
+              onClick={handleClear}
+              className="mt-6 w-full rounded-full border border-dark-900 px-4 py-3 text-body-medium text-dark-900 transition hover:bg-light-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
             >
-              Close
+              Clear Filters
             </button>
-
-            <FilterContent
-              selectedMap={selectedMap}
-              onToggle={handleToggle}
-              onClear={handleClear}
-              expandedState={expandedState}
-              setExpandedState={setExpandedState}
-              activeCount={activeFilterCount}
-            />
-          </aside>
+          </div>
         </div>
       ) : null}
     </div>

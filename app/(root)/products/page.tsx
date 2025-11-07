@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import Card from "@/src/components/Card";
-import Filters from "@/src/components/Filters";
-import Sort from "@/src/components/Sort";
+import Filters from "@/src/components/catalog/Filters";
+import Sort from "@/src/components/catalog/Sort";
 import {
   COLOR_OPTIONS,
   GENDER_OPTIONS,
