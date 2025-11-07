@@ -6,18 +6,22 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   buildUrl,
   parseSearchParams,
-  removeQueryKeys,
   setQueryValue,
 } from "@/src/lib/utils/query";
 
-const SORT_OPTIONS = [
-  { value: "featured", label: "Featured" },
-  { value: "newest", label: "Newest" },
-  { value: "price_desc", label: "Price: High → Low" },
-  { value: "price_asc", label: "Price: Low → High" },
-] as const;
+export interface SizeOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
 
-export default function Sort() {
+interface SortProps {
+  sizes: SizeOption[];
+  sizeGuideHref?: string;
+  className?: string;
+}
+
+export default function Sort({ sizes, sizeGuideHref, className }: SortProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -27,51 +31,80 @@ export default function Sort() {
     [searchParams]
   );
 
-  const selectedSort = useMemo(() => {
-    const value = query.sort;
+  const selectedSize = useMemo(() => {
+    const value = query.size;
 
     if (!value) {
-      return "featured";
+      return null;
     }
 
     if (Array.isArray(value)) {
-      return value[0] ?? "featured";
+      return value[0] ?? null;
     }
 
     return value;
-  }, [query.sort]);
+  }, [query.size]);
 
-  const handleChange = useCallback(
-    (value: string) => {
-      const nextQuery = removeQueryKeys(
-        setQueryValue(query, "sort", value === "featured" ? null : value),
-        ["page"]
-      );
+  const handleSelect = useCallback(
+    (value: string, disabled?: boolean) => {
+      if (disabled) {
+        return;
+      }
 
-      router.push(buildUrl(pathname, nextQuery), { scroll: false });
+      const isActive = selectedSize === value;
+      const nextQuery = setQueryValue(query, "size", isActive ? null : value);
+      const nextUrl = buildUrl(pathname, nextQuery);
+
+      router.replace(nextUrl, { scroll: false });
     },
-    [pathname, query, router]
+    [pathname, query, router, selectedSize]
   );
 
   return (
-    <label className="flex items-center gap-3 text-body text-dark-700">
-      <span className="text-body-medium text-dark-900">Sort by</span>
-      <span className="relative">
-        <select
-          className="appearance-none rounded-full border border-light-400 bg-light-100 px-4 py-2 pr-8 text-body text-dark-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
-          value={selectedSort}
-          onChange={(event) => handleChange(event.target.value)}
-        >
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
+    <section className={className} aria-label="Select Size">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-caption uppercase tracking-wide text-dark-500">
+            Select Size
+          </p>
+          <p className="text-body text-dark-700">
+            {selectedSize ? `Size US ${selectedSize}` : "Select a size"}
+          </p>
+        </div>
+        {sizeGuideHref ? (
+          <a
+            href={sizeGuideHref}
+            className="text-body-medium text-dark-900 underline underline-offset-4 transition hover:text-dark-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900"
+          >
+            Size Guide
+          </a>
+        ) : null}
+      </div>
+
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+        {sizes.map((option) => {
+          const isSelected = option.value === selectedSize;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => handleSelect(option.value, option.disabled)}
+              disabled={option.disabled}
+              aria-pressed={isSelected}
+              className={`flex h-12 items-center justify-center rounded-lg border text-body-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-900 ${
+                option.disabled
+                  ? "cursor-not-allowed border-light-300 bg-light-200 text-dark-500"
+                  : isSelected
+                  ? "border-dark-900 bg-dark-900 text-light-100"
+                  : "border-light-300 bg-light-100 text-dark-900 hover:border-dark-900"
+              }`}
+            >
               {option.label}
-            </option>
-          ))}
-        </select>
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-caption text-dark-500">
-          ▾
-        </span>
-      </span>
-    </label>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
